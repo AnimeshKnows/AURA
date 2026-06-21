@@ -1,0 +1,49 @@
+# ─── Generated Output Artifacts ───────────────────────────────────────────────
+outputs/
+**/outputs/
+
+# ─── Trained Model Weights ────────────────────────────────────────────────────
+models/*.h5
+**/models/*.h5
+
+# ─── Training History Visualizations ─────────────────────────────────────────
+training_loss.png
+*_training_loss.png
+
+# ─── Python Bytecode Cache ────────────────────────────────────────────────────
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ─── Virtual Environment ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ─── macOS System Metadata ────────────────────────────────────────────────────
+.DS_Store
+
+# ─── Windows System Metadata ──────────────────────────────────────────────────
+Thumbs.db
+desktop.ini
+
+# ─── VS Code Workspace Settings ───────────────────────────────────────────────
+.vscode/
+
+# ─── Dataset Directory (large binary assets, not for version control) ─────────
+bottle/
+
+# ─── Jupyter Notebook Checkpoints ─────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ─── pytest / Coverage Artifacts ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ─── Python Egg / Distribution ────────────────────────────────────────────────
+*.egg-info/
+dist/
+build/
