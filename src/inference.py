@@ -7,6 +7,7 @@ def load_and_preprocess(img_path, img_size):
     if img is None:
         return None
     img = cv2.resize(img, img_size)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img.astype('float32') / 255.0
     return img
 def run_inference(model, test_dir, output_dir, img_size, samples_per_class=3):
@@ -17,7 +18,7 @@ def run_inference(model, test_dir, output_dir, img_size, samples_per_class=3):
         class_dir = os.path.join(test_dir, defect_type)
         output_class_dir = os.path.join(output_dir, defect_type)
         os.makedirs(output_class_dir, exist_ok=True)
-        img_names = sorted(os.listdir(class_dir)[:samples_per_class])  # Only a few samples
+        img_names = sorted(os.listdir(class_dir))[:samples_per_class]  # Only a few samples
         for img_name in img_names:
             img_path = os.path.join(class_dir, img_name)
             img = load_and_preprocess(img_path, img_size)

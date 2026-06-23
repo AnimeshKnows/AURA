@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 def load_images(data_path, img_size):
     images = []
-    for img_name in os.listdir(data_path):
+    for img_name in sorted(os.listdir(data_path)):
         img_path = os.path.join(data_path, img_name)
         img = cv2.imread(img_path, cv2.IMREAD_COLOR)
         if img is None:
