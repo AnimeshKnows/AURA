@@ -2,7 +2,7 @@
 
 import csv
 import os
-from typing import Any, Dict, Mapping
+from typing import Any, Mapping, Optional, Sequence, Set, Tuple
 
 RESULT_FIELDS = (
     "dataset_name",
@@ -13,6 +13,9 @@ RESULT_FIELDS = (
     "auroc",
     "timestamp",
 )
+
+# Key used for resume-safety lookups.
+ResultKey = Tuple[str, str, str, str]  # category, depth, loss_fn, img_size
 
 
 def log_result(csv_path: str, row_dict: Mapping[str, Any]) -> None:
@@ -30,3 +33,36 @@ def log_result(csv_path: str, row_dict: Mapping[str, Any]) -> None:
         if write_header:
             writer.writeheader()
         writer.writerow(row)
+
+
+def _row_key(row: Mapping[str, Any]) -> ResultKey:
+    return (
+        str(row.get("category", "")),
+        str(row.get("bottleneck_depth", "")),
+        str(row.get("loss_fn", "")),
+        str(row.get("img_size", "")),
+    )
+
+
+def load_completed_keys(csv_path: str) -> Set[ResultKey]:
+    """Return set of (category, depth, loss_fn, img_size) keys already in the CSV."""
+    if not os.path.exists(csv_path) or os.path.getsize(csv_path) == 0:
+        return set()
+    keys: Set[ResultKey] = set()
+    with open(csv_path, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            keys.add(_row_key(row))
+    return keys
+
+
+def has_result(
+    csv_path: str,
+    category: str,
+    bottleneck_depth: int,
+    loss_fn: str,
+    img_size: int,
+) -> bool:
+    """True if a matching result row already exists (resume-safety check)."""
+    key = (str(category), str(bottleneck_depth), str(loss_fn), str(img_size))
+    return key in load_completed_keys(csv_path)

@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import Any
+from typing import Any, Optional
 
 
 def build_model_path(dataset_name: str, **config_kwargs: Any) -> str:
@@ -16,6 +16,21 @@ def build_model_path(dataset_name: str, **config_kwargs: Any) -> str:
     if "loss_fn" in config_kwargs and config_kwargs["loss_fn"] is not None:
         name += f"_{config_kwargs['loss_fn']}"
     return os.path.join(".", "models", f"{name}.h5")
+
+
+def build_run_output_dir(
+    output_dir: str,
+    dataset_name: str,
+    bottleneck_depth: Optional[int] = None,
+    loss_fn: Optional[str] = None,
+) -> str:
+    """Build a per-run visualization directory (avoids depth/loss PNG collisions)."""
+    name = str(dataset_name)
+    if bottleneck_depth is not None:
+        name += f"_depth{bottleneck_depth}"
+    if loss_fn is not None:
+        name += f"_{loss_fn}"
+    return os.path.join(output_dir, name)
 
 
 def parse_args() -> argparse.Namespace:
