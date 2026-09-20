@@ -6,13 +6,15 @@ from typing import Any
 def build_model_path(dataset_name: str, **config_kwargs: Any) -> str:
     """Build a model checkpoint path from dataset name and optional config.
 
-    Incorporates ``bottleneck_depth`` when provided (e.g.
-    ``cae_bottle_depth2.h5``). Extra keyword arguments remain accepted so
+    Incorporates ``bottleneck_depth`` and ``loss_fn`` when provided (e.g.
+    ``cae_bottle_depth2_mse.h5``). Extra keyword arguments remain accepted so
     future phases can extend naming without changing call sites.
     """
     name = f"cae_{dataset_name}"
     if "bottleneck_depth" in config_kwargs and config_kwargs["bottleneck_depth"] is not None:
         name += f"_depth{config_kwargs['bottleneck_depth']}"
+    if "loss_fn" in config_kwargs and config_kwargs["loss_fn"] is not None:
+        name += f"_{config_kwargs['loss_fn']}"
     return os.path.join(".", "models", f"{name}.h5")
 
 
@@ -78,6 +80,16 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Number of encoder/decoder conv+pool (or upsample) blocks "
             "(default: 2)."
+        ),
+    )
+    parser.add_argument(
+        "--loss_fn",
+        type=str,
+        choices=["mse", "l1", "ssim"],
+        default="mse",
+        help=(
+            "Training loss: 'mse' (mean squared error), 'l1' (mean absolute "
+            "error), or 'ssim' (1 - structural similarity). Default: 'mse'."
         ),
     )
 

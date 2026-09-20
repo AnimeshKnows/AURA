@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from cae import build_cae
+from losses import get_loss
 from sklearn.model_selection import train_test_split
 
 def load_images(data_path, img_size):
@@ -27,6 +28,7 @@ def train_model(
     model_save_path,
     bottleneck_depth=2,
     base_filters=32,
+    loss_fn="mse",
 ):
     print("[TRAIN] Loading training data...")
     X = load_images(data_dir, img_size)
@@ -38,7 +40,7 @@ def train_model(
     model = build_cae(
         input_shape, depth=bottleneck_depth, base_filters=base_filters
     )
-    model.compile(optimizer='adam', loss='mse')
+    model.compile(optimizer='adam', loss=get_loss(loss_fn))
 
     print("[TRAIN] Training model...")
     history = model.fit(X_train, X_train,

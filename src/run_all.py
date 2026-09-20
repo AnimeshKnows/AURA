@@ -16,7 +16,9 @@ if __name__ == '__main__':
     # === Derived configuration (dynamic, dataset-agnostic) ===
     IMG_SIZE = (args.img_size, args.img_size)
     MODEL_PATH = build_model_path(
-        args.dataset_name, bottleneck_depth=args.bottleneck_depth
+        args.dataset_name,
+        bottleneck_depth=args.bottleneck_depth,
+        loss_fn=args.loss_fn,
     )
 
     # === Step 1: Train or load the model ===
@@ -29,6 +31,7 @@ if __name__ == '__main__':
             args.epochs,
             MODEL_PATH,
             bottleneck_depth=args.bottleneck_depth,
+            loss_fn=args.loss_fn,
         )
 
         # === Step 2: Plot and save training loss curve ===
