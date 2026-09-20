@@ -2,6 +2,9 @@
 import os
 import cv2
 import numpy as np
+from scoring import compute_auroc, image_anomaly_score
+
+
 def load_and_preprocess(img_path, img_size):
     img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     if img is None:
@@ -10,23 +13,52 @@ def load_and_preprocess(img_path, img_size):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img.astype('float32') / 255.0
     return img
+
+
 def run_inference(model, test_dir, output_dir, img_size, samples_per_class=3):
+    """Run inference on all test images; save viz for samples_per_class only.
+
+    Returns
+    -------
+    result_list : list
+        Visualization payloads for the sampled images (matplotlib grids).
+    auroc : float or None
+        Image-level AUROC over the full test set for this category
+        (``test_dir`` is one MVTec category's test folder).
+    """
     print("[INFER] Running inference...")
     os.makedirs(output_dir, exist_ok=True)
     result_list = []
+    y_true = []
+    y_scores = []
+
     for defect_type in sorted(os.listdir(test_dir)):
         class_dir = os.path.join(test_dir, defect_type)
+        if not os.path.isdir(class_dir):
+            continue
         output_class_dir = os.path.join(output_dir, defect_type)
         os.makedirs(output_class_dir, exist_ok=True)
-        img_names = sorted(os.listdir(class_dir))[:samples_per_class]  # Only a few samples
-        for img_name in img_names:
+        label = 0 if defect_type == "good" else 1
+        img_names = sorted(os.listdir(class_dir))
+
+        for idx, img_name in enumerate(img_names):
             img_path = os.path.join(class_dir, img_name)
+            if not os.path.isfile(img_path):
+                continue
             img = load_and_preprocess(img_path, img_size)
             if img is None:
                 continue
             input_img = np.expand_dims(img, axis=0)
-            recon_img = model.predict(input_img)[0]
-            # Error map & heatmap
+            recon_img = model.predict(input_img, verbose=0)[0]
+
+            score = image_anomaly_score(img, recon_img)
+            y_true.append(label)
+            y_scores.append(score)
+
+            # Visualization PNGs only for the first samples_per_class images.
+            if idx >= samples_per_class:
+                continue
+
             error_map = np.abs(img - recon_img)
             heatmap = np.mean(error_map, axis=-1).astype(np.float32)
             if np.max(heatmap) != np.min(heatmap):
@@ -54,7 +86,14 @@ def run_inference(model, test_dir, output_dir, img_size, samples_per_class=3):
                 'heatmap': heatmap,
                 'overlay': overlay_rgb,
                 'class': defect_type,
-                'name': base
+                'name': base,
+                'anomaly_score': score,
             })
+
+    auroc = compute_auroc(y_true, y_scores)
+    if auroc is None:
+        print("[INFER] AUROC undefined (need both good and defect samples).")
+    else:
+        print(f"[INFER] AUROC (full test set, n={len(y_scores)}): {auroc:.4f}")
     print(f"[INFER] Inference complete. Results saved to '{output_dir}'.")
-    return result_list
+    return result_list, auroc

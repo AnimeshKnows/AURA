@@ -53,6 +53,15 @@ def parse_args() -> argparse.Namespace:
         default="./outputs",
         help="Root directory for all inference outputs and visualizations (default: './outputs')."
     )
+    parser.add_argument(
+        "--results_csv",
+        type=str,
+        default="./results/aura_results.csv",
+        help=(
+            "CSV path for appending per-run AUROC results "
+            "(default: './results/aura_results.csv')."
+        ),
+    )
 
     # --- Model hyperparameters ---
     parser.add_argument(

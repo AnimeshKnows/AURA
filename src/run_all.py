@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import tensorflow as tf
+from datetime import datetime, timezone
 from train import train_model
 from inference import run_inference
 from cli import parse_args, build_model_path
+from results_logger import log_result
 
 if __name__ == '__main__':
 
@@ -58,10 +60,29 @@ if __name__ == '__main__':
 
     # === Step 3: Run inference & save results ===
     print("[INFO] Running inference...")
-    results = run_inference(
+    results, auroc = run_inference(
         model, args.test_dir, args.output_dir, IMG_SIZE,
         samples_per_class=args.samples_per_class
     )
+
+    # test_dir is one MVTec category's test folder; log one row for that category.
+    log_result(
+        args.results_csv,
+        {
+            "dataset_name": args.dataset_name,
+            "bottleneck_depth": args.bottleneck_depth,
+            "loss_fn": args.loss_fn,
+            "img_size": args.img_size,
+            "category": args.dataset_name,
+            "auroc": "" if auroc is None else f"{auroc:.6f}",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    print(f"[INFO] Logged results to: {args.results_csv}")
+    if auroc is None:
+        print("[INFO] AUROC: N/A")
+    else:
+        print(f"[INFO] AUROC: {auroc:.4f}")
 
     # === Step 4: Plot and save 2x2 grids for each result ===
     print("[INFO] Creating visual result grids...")
