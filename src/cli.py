@@ -6,12 +6,14 @@ from typing import Any
 def build_model_path(dataset_name: str, **config_kwargs: Any) -> str:
     """Build a model checkpoint path from dataset name and optional config.
 
-    Currently only ``dataset_name`` affects the filename. Extra keyword
-    arguments are accepted so future phases (e.g. bottleneck depth, loss
-    function, resolution) can extend naming without changing call sites.
+    Incorporates ``bottleneck_depth`` when provided (e.g.
+    ``cae_bottle_depth2.h5``). Extra keyword arguments remain accepted so
+    future phases can extend naming without changing call sites.
     """
-    _ = config_kwargs  # reserved for future path components
-    return os.path.join(".", "models", f"cae_{dataset_name}.h5")
+    name = f"cae_{dataset_name}"
+    if "bottleneck_depth" in config_kwargs and config_kwargs["bottleneck_depth"] is not None:
+        name += f"_depth{config_kwargs['bottleneck_depth']}"
+    return os.path.join(".", "models", f"{name}.h5")
 
 
 def parse_args() -> argparse.Namespace:
@@ -68,6 +70,15 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=32,
         help="Mini-batch size for training (default: 32)."
+    )
+    parser.add_argument(
+        "--bottleneck_depth",
+        type=int,
+        default=2,
+        help=(
+            "Number of encoder/decoder conv+pool (or upsample) blocks "
+            "(default: 2)."
+        ),
     )
 
     # --- Inference ---

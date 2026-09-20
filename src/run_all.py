@@ -15,13 +15,20 @@ if __name__ == '__main__':
 
     # === Derived configuration (dynamic, dataset-agnostic) ===
     IMG_SIZE = (args.img_size, args.img_size)
-    MODEL_PATH = build_model_path(args.dataset_name)
+    MODEL_PATH = build_model_path(
+        args.dataset_name, bottleneck_depth=args.bottleneck_depth
+    )
 
     # === Step 1: Train or load the model ===
     if not args.skip_training:
         print("[INFO] Starting training...")
         model, history = train_model(
-            args.train_dir, IMG_SIZE, args.batch_size, args.epochs, MODEL_PATH
+            args.train_dir,
+            IMG_SIZE,
+            args.batch_size,
+            args.epochs,
+            MODEL_PATH,
+            bottleneck_depth=args.bottleneck_depth,
         )
 
         # === Step 2: Plot and save training loss curve ===

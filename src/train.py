@@ -19,7 +19,15 @@ def load_images(data_path, img_size):
         images.append(img)
     return np.array(images)
 
-def train_model(data_dir, img_size, batch_size, epochs, model_save_path):
+def train_model(
+    data_dir,
+    img_size,
+    batch_size,
+    epochs,
+    model_save_path,
+    bottleneck_depth=2,
+    base_filters=32,
+):
     print("[TRAIN] Loading training data...")
     X = load_images(data_dir, img_size)
 
@@ -27,7 +35,9 @@ def train_model(data_dir, img_size, batch_size, epochs, model_save_path):
     X_train, X_val = train_test_split(X, test_size=0.1, random_state=42)
 
     print("[TRAIN] Building model...")
-    model = build_cae(input_shape)
+    model = build_cae(
+        input_shape, depth=bottleneck_depth, base_filters=base_filters
+    )
     model.compile(optimizer='adam', loss='mse')
 
     print("[TRAIN] Training model...")
