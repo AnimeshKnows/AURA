@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from train import train_model
 from inference import run_inference
-from cli import parse_args
+from cli import parse_args, build_model_path
 
 if __name__ == '__main__':
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # === Derived configuration (dynamic, dataset-agnostic) ===
     IMG_SIZE = (args.img_size, args.img_size)
-    MODEL_PATH = os.path.join(".", "models", f"cae_{args.dataset_name}.h5")
+    MODEL_PATH = build_model_path(args.dataset_name)
 
     # === Step 1: Train or load the model ===
     if not args.skip_training:

@@ -34,17 +34,25 @@ def run_inference(model, test_dir, output_dir, img_size, samples_per_class=3):
             else:
                 heatmap_norm = np.zeros_like(heatmap, dtype=np.uint8)
             heatmap_colored = cv2.applyColorMap(heatmap_norm.astype(np.uint8), cv2.COLORMAP_JET)
-            overlay = cv2.addWeighted((img * 255).astype(np.uint8), 0.6, heatmap_colored, 0.4, 0)
+            img_uint8 = (img * 255).astype(np.uint8)
+            recon_uint8 = (recon_img * 255).astype(np.uint8)
+            img_bgr = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2BGR)
+            # Overlay must mix BGR base with BGR heatmap_colored; keep RGB copy for matplotlib.
+            overlay_bgr = cv2.addWeighted(img_bgr, 0.6, heatmap_colored, 0.4, 0)
+            overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
             base = os.path.splitext(img_name)[0]
-            cv2.imwrite(os.path.join(output_class_dir, f"{base}_input.png"), (img * 255).astype(np.uint8))
-            cv2.imwrite(os.path.join(output_class_dir, f"{base}_recon.png"), (recon_img * 255).astype(np.uint8))
+            cv2.imwrite(os.path.join(output_class_dir, f"{base}_input.png"), img_bgr)
+            cv2.imwrite(
+                os.path.join(output_class_dir, f"{base}_recon.png"),
+                cv2.cvtColor(recon_uint8, cv2.COLOR_RGB2BGR),
+            )
             cv2.imwrite(os.path.join(output_class_dir, f"{base}_heatmap.png"), heatmap_colored)
-            cv2.imwrite(os.path.join(output_class_dir, f"{base}_overlay.png"), overlay)
+            cv2.imwrite(os.path.join(output_class_dir, f"{base}_overlay.png"), overlay_bgr)
             result_list.append({
                 'input': img,
                 'recon': recon_img,
                 'heatmap': heatmap,
-                'overlay': overlay,
+                'overlay': overlay_rgb,
                 'class': defect_type,
                 'name': base
             })

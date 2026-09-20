@@ -14,6 +14,7 @@ def load_images(data_path, img_size):
         if img is None:
             continue
         img = cv2.resize(img, img_size)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = img.astype('float32') / 255.0
         images.append(img)
     return np.array(images)
@@ -21,11 +22,7 @@ def load_images(data_path, img_size):
 def train_model(data_dir, img_size, batch_size, epochs, model_save_path):
     print("[TRAIN] Loading training data...")
     X = load_images(data_dir, img_size)
-    
-    # Add channel dimension if needed
-    if len(X.shape) == 3:
-        X = np.expand_dims(X, axis=-1)
-    
+
     input_shape = X.shape[1:]
     X_train, X_val = train_test_split(X, test_size=0.1, random_state=42)
 

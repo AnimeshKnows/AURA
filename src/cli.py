@@ -1,4 +1,17 @@
 import argparse
+import os
+from typing import Any
+
+
+def build_model_path(dataset_name: str, **config_kwargs: Any) -> str:
+    """Build a model checkpoint path from dataset name and optional config.
+
+    Currently only ``dataset_name`` affects the filename. Extra keyword
+    arguments are accepted so future phases (e.g. bottleneck depth, loss
+    function, resolution) can extend naming without changing call sites.
+    """
+    _ = config_kwargs  # reserved for future path components
+    return os.path.join(".", "models", f"cae_{dataset_name}.h5")
 
 
 def parse_args() -> argparse.Namespace:
